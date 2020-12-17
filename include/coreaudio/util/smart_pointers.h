@@ -21,6 +21,8 @@ namespace coreaudio {
  * `operator*` and `operator->` throw a `_com_error(E_INVALIDARG)` if there is no held pointer (`!*this`). Thus,
  * they are not defined when COREAUDIO_NOEXCEPTIONS.
  *
+ * Never const.
+ *
  * @tparam T The COM interface type
  */
 template<typename T = IUnknown>

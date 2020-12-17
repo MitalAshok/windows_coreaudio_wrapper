@@ -1,0 +1,6 @@
+#ifndef WINDOWS_COREAUDIO_WRAPPER_DEVICE_INTERFACES_H_
+#define WINDOWS_COREAUDIO_WRAPPER_DEVICE_INTERFACES_H_
+
+#include "coreaudio/device_interfaces/endpoint_volume.h"
+
+#endif  // WINDOWS_COREAUDIO_WRAPPER_DEVICE_INTERFACES_H_

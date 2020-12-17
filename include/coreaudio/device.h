@@ -3,11 +3,15 @@
 
 #include "mmdeviceapi.h"
 #include "winerror.h"
+#include "unknwn.h"
 
 #include <new>
+#include <type_traits>
 
+#include "coreaudio/device_interfaces/endpoint_volume.h"
 #include "coreaudio/util/smart_pointers.h"
 #include "coreaudio/util/h_optional.h"
+#include "coreaudio/util/has_uuid.h"
 #include "coreaudio/util/throw_com_error.h"
 #include "coreaudio/util/interface_wrapper.h"
 
@@ -53,7 +57,68 @@ public:
         return { status, x };
     }
 
-    // TODO: value->Activate, value->OpenPropertyStore
+#ifndef COREAUDIO_NOEXCEPTIONS
+    com_pointer<IPropertyStore> open_property_store(DWORD stgm_access = STGM_READ) const {
+        com_pointer<IPropertyStore> result;
+        throw_com_error(value->OpenPropertyStore(stgm_access, &result.get_for_overwrite()));
+        return result;
+    }
+#endif
+    h_optional<com_pointer<IPropertyStore>> open_property_store(std::nothrow_t, DWORD stgm_access) const noexcept {
+        if (!value) return { E_INVALIDARG, nullptr };
+        com_pointer<IPropertyStore> result;
+        HRESULT status = value.get()->OpenPropertyStore(stgm_access, &result.get_for_overwrite());
+        return { status, static_cast<com_pointer<IPropertyStore>&&>(result) };
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    template<typename T>
+    com_pointer<T> activate(PROPVARIANT* activation_params = nullptr, DWORD class_ctx = CLSCTX_ALL) const {
+        static_assert(detail::maybe_com_interface<T>::value, "device::activate<T>(): T is not a valid COM interface to activate");
+
+        com_pointer<T> result;
+        throw_com_error(value->Activate(
+            __uuidof(T), class_ctx, activation_params, reinterpret_cast<void**>(&result.get_for_overwrite())
+        ));
+        return result;
+    }
+#endif
+    template<typename T>
+    h_optional<com_pointer<T>> activate(std::nothrow_t, PROPVARIANT* activation_params = nullptr, DWORD class_ctx = CLSCTX_ALL) const {
+        detail::maybe_com_interface<T>::type::value;
+        static_assert(detail::maybe_com_interface<T>::value, "device::activate<T>(): T is not a valid COM interface to activate");
+        if (!value) return { E_INVALIDARG, nullptr };
+
+        com_pointer<T> result;
+        HRESULT status = value.get()->Activate(
+            __uuidof(T), class_ctx, activation_params, reinterpret_cast<void**>(&result.get_for_overwrite())
+        );
+        return { status, static_cast<com_pointer<T>&&>(result) };
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    endpoint_volume activate_endpoint_volume(DWORD class_ctx = CLSCTX_ALL) const {
+        return endpoint_volume(activate<typename endpoint_volume::raw_interface>(nullptr, class_ctx).release());
+    }
+#endif
+    h_optional<endpoint_volume> activate_endpoint_volume(std::nothrow_t, DWORD class_ctx = CLSCTX_ALL) const noexcept {
+        h_optional<com_pointer<typename endpoint_volume::raw_interface>> result = activate<typename endpoint_volume::raw_interface>(std::nothrow, nullptr, class_ctx);
+        return { result.get_status(), endpoint_volume(result.get_unchecked().release()) };
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    com_pointer<IMMEndpoint> as_endpoint() const {
+        com_pointer<IMMEndpoint> result;
+        value->QueryInterface(__uuidof(IMMEndpoint), reinterpret_cast<void**>(&result.get_for_overwrite()));
+        return result;
+    }
+#endif
+    h_optional<com_pointer<IMMEndpoint>> as_endpoint(std::nothrow_t) const noexcept {
+        if (!value) return { E_INVALIDARG, nullptr };
+        com_pointer<IMMEndpoint> result;
+        HRESULT status = value.get()->QueryInterface(__uuidof(IMMEndpoint), reinterpret_cast<void**>(&result.get_for_overwrite()));
+        return { status, static_cast<com_pointer<IMMEndpoint>&&>(result) };
+    }
 };
 
 }

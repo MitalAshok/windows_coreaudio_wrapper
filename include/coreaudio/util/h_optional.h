@@ -29,6 +29,8 @@ struct h_optional {
     h_optional(h_optional&&) = default;
     h_optional(HRESULT status, const T& value) : status(status), value(value) {}
     h_optional(HRESULT status, T&& value) : status(status), value(static_cast<T&&>(value)) {}
+    template<typename U> h_optional(U, const T&) = delete;  // Prevent non-HRESULT first arg
+    template<typename U> h_optional(U, T&&) = delete;
 
     h_optional& operator=(const h_optional&) = default;
     h_optional& operator=(h_optional&&) = default;
@@ -63,7 +65,7 @@ struct h_optional {
         return has_value();
     }
 private:
-    const HRESULT status;
+    HRESULT status;
     T value;
 };
 

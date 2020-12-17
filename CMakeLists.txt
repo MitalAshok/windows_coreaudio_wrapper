@@ -7,8 +7,11 @@ add_library(windows_coreaudio_wrapper INTERFACE)
 
 target_sources(windows_coreaudio_wrapper INTERFACE
         include/coreaudio/coreaudio.h
+        include/coreaudio/device_interfaces/device_interfaces.h
+        include/coreaudio/device_interfaces/endpoint_volume.h
         include/coreaudio/util/utils.h
         include/coreaudio/util/h_optional.h
+        include/coreaudio/util/has_uuid.h
         include/coreaudio/util/indexed_dynamic_iterator.h
         include/coreaudio/util/interface_wrapper.h
         include/coreaudio/util/smart_pointers.h
