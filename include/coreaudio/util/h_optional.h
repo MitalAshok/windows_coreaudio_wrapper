@@ -32,8 +32,7 @@ struct h_optional {
     template<typename U> h_optional(U, const T&) = delete;  // Prevent non-HRESULT first arg
     template<typename U> h_optional(U, T&&) = delete;
 
-    h_optional& operator=(const h_optional&) = default;
-    h_optional& operator=(h_optional&&) = default;
+    h_optional& operator=(const h_optional&) = delete;
 
 #ifndef COREAUDIO_NOEXCEPTIONS
     const T& operator*() const {
@@ -65,7 +64,7 @@ struct h_optional {
         return has_value();
     }
 private:
-    HRESULT status;
+    const HRESULT status;
     T value;
 };
 

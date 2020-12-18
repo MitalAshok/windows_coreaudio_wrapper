@@ -123,15 +123,17 @@ public:
     }
 
 private:
-    mutable h_optional<UINT> step_count_cache = { E_POINTER, 0 };
+    mutable HRESULT step_count_cache_status = E_POINTER;
+    mutable UINT step_count_cache = 0;
 public:
 #ifndef COREAUDIO_NOEXCEPTIONS
     UINT get_current_step_index() const {
         UINT step = 0;
-        if (!step_count_cache) {
+        if (FAILED(step_count_cache_status)) {
             UINT step_count = 0;
             HRESULT hr = value->GetVolumeStepInfo(&step, &step_count);
-            step_count_cache = { hr, step_count };
+            step_count_cache_status = hr;
+            step_count_cache = step_count;
             throw_com_error(hr);
         } else {
             throw_com_error(value->GetVolumeStepInfo(&step, nullptr));
@@ -143,10 +145,11 @@ public:
         if (!value) return { E_INVALIDARG, 0 };
         UINT step = 0;
         HRESULT hr;
-        if (!step_count_cache) {
+        if (FAILED(step_count_cache_status)) {
             UINT step_count = 0;
             hr = value.get()->GetVolumeStepInfo(&step, &step_count);
-            step_count_cache = { hr, step_count };
+            step_count_cache_status = hr;
+            step_count_cache = step_count;
         } else {
             hr = value.get()->GetVolumeStepInfo(&step, nullptr);
         }
@@ -160,12 +163,13 @@ public:
 #endif
     h_optional<UINT> get_step_count(std::nothrow_t) const noexcept {
         if (!value) return { E_INVALIDARG, 0 };
-        if (!step_count_cache) {
+        if (FAILED(step_count_cache_status)) {
             UINT step_count = 0;
             HRESULT hr = value.get()->GetVolumeStepInfo(nullptr, &step_count);
-            step_count_cache = { hr, step_count };
+            step_count_cache_status = hr;
+            step_count_cache = step_count;
         }
-        return step_count_cache;
+        return { step_count_cache_status, step_count_cache };
     }
 
 #ifndef COREAUDIO_NOEXCEPTIONS
