@@ -51,7 +51,7 @@ public:
     }
 
     size_type size() const noexcept {
-        return value ? 0 : count;
+        return value ? count : 0;
     }
 
     device operator[](size_type n) const noexcept {

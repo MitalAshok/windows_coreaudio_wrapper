@@ -180,7 +180,7 @@ public:
     }
 #endif
     h_optional<DWORD> query_hardware_support(std::nothrow_t) const noexcept {
-        if (!value) return { E_INVALIDARG, 0 };
+        if (!value) return { E_INVALIDARG, 0 };  // Check before because it may have been released
         DWORD result = 0;
         HRESULT status = value.get()->QueryHardwareSupport(&result);
         return { status, result };
@@ -196,7 +196,85 @@ public:
         return value.get()->RegisterControlChangeNotify(callback);
     }
 
-    // TODO: finish
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void set_channel_volume_level_dB(UINT i, float level_dB, const GUID& event_context = GUID_NULL) const {
+        throw_com_error(value->SetChannelVolumeLevel(i, level_dB, &event_context));
+    }
+#endif
+    HRESULT set_channel_volume_level_dB(std::nothrow_t, UINT i, float level_dB, const GUID& event_context = GUID_NULL) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->SetChannelVolumeLevel(i, level_dB, &event_context);
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void set_channel_volume_level_scalar(UINT i, float level, const GUID& event_context = GUID_NULL) const {
+        throw_com_error(value->SetChannelVolumeLevel(i, level, &event_context));
+    }
+#endif
+    HRESULT set_channel_volume_level_scalar(std::nothrow_t, UINT i, float level, const GUID& event_context = GUID_NULL) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->SetChannelVolumeLevel(i, level, &event_context);
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void set_master_volume_level_dB(float level_dB, const GUID& event_context = GUID_NULL) const {
+        throw_com_error(value->SetMasterVolumeLevel(level_dB, &event_context));
+    }
+#endif
+    HRESULT set_master_volume_level_dB(std::nothrow_t, float level_dB, const GUID& event_context = GUID_NULL) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->SetMasterVolumeLevel(level_dB, &event_context);
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void set_master_volume_level_scalar(float level, const GUID& event_context = GUID_NULL) const {
+        throw_com_error(value->SetMasterVolumeLevelScalar(level, &event_context));
+    }
+#endif
+    HRESULT set_master_volume_level_scalar(std::nothrow_t, float level, const GUID& event_context = GUID_NULL) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->SetMasterVolumeLevelScalar(level, &event_context);
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void set_mute(bool mute, const GUID& event_context = GUID_NULL) const {
+        throw_com_error(value->SetMute(mute ? TRUE : FALSE, &event_context));
+    }
+#endif
+    HRESULT set_mute(std::nothrow_t, bool mute, const GUID& event_context = GUID_NULL) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->SetMute(mute ? TRUE : FALSE, &event_context);
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void unregister_control_change_notify(IAudioEndpointVolumeCallback* callback) const {
+        throw_com_error(value->UnregisterControlChangeNotify(callback));
+    }
+#endif
+    HRESULT unregister_control_change_notify(std::nothrow_t, IAudioEndpointVolumeCallback* callback) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->UnregisterControlChangeNotify(callback);
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void volume_step_down(const GUID& event_context = GUID_NULL) const {
+        throw_com_error(value->VolumeStepDown(&event_context));
+    }
+#endif
+    HRESULT volume_step_down(std::nothrow_t, const GUID& event_context = GUID_NULL) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->VolumeStepDown(&event_context);
+    }
+
+#ifndef COREAUDIO_NOEXCEPTIONS
+    void volume_step_up(const GUID& event_context = GUID_NULL) const {
+        throw_com_error(value->VolumeStepUp(&event_context));
+    }
+#endif
+    HRESULT volume_step_up(std::nothrow_t, const GUID& event_context = GUID_NULL) const noexcept {
+        if (!value) return E_INVALIDARG;
+        return value.get()->VolumeStepUp(&event_context);
+    }
 };
 
 }
